@@ -4,7 +4,7 @@ name := "AxaSpark"
 version := "0.1"
 
 scalaVersion := "2.11.12"
-val sparkVersion = "2.4.6"
+val sparkVersion = "2.2.1"
 
 resolvers ++= Seq(
   "confluent" at "http://packages.confluent.io/maven/"
@@ -14,8 +14,6 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion,
-  "org.apache.spark" %% "spark-hive" % sparkVersion,
-  "org.apache.spark" %% "spark-avro" % sparkVersion,
 
   //"com.rakuten.dps" %% "dps-base-batch" % "1.3",
   // to resolve conflicts

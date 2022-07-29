@@ -12,10 +12,12 @@ object job extends TransformUtil{
     .appName("AxaSpark")
     .getOrCreate()
 
+  val input = "/data"
+
   import spark.implicits._
 
   def extract(): DataFrame = {
-    val df = spark.read.format("csv").option("header", "true").load("file:///C:\\AxaSpark/src/main/resources/log20170211.csv")
+    val df = spark.read.format("csv").option("header", "true").load("/data/log20170211.csv")
     df.printSchema()
     val new_df = df.groupBy("ip","time").agg(sum("size"),count("size")).
       withColumnRenamed("sum(size)","doc_sum").withColumnRenamed("count(size)","doc_count")

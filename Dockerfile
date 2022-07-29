@@ -1,24 +1,25 @@
-FROM sequenceiq/hadoop-docker:2.7.0
-MAINTAINER SequenceIQ
+FROM openjdk:8-alpine
 
-#support for Hadoop 2.6.0
-RUN curl -s https://dlcdn.apache.org/spark/spark-3.3.0/spark-3.3.0-bin-hadoop2.tgz | tar -xz -C /usr/local/
-RUN cd /usr/local && ln -s spark-3.3.3-bin-hadoop2 spark
-ENV SPARK_HOME /usr/local/spark
-RUN mkdir $SPARK_HOME/yarn-remote-client
-ADD yarn-remote-client $SPARK_HOME/yarn-remote-client
+RUN apk --update add git curl tar bash ncurses && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm /var/cache/apk/*
 
-RUN $BOOTSTRAP && $HADOOP_PREFIX/bin/hadoop dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME-1.6.1-bin-hadoop2.6/lib /spark
+ARG SBT_VERSION=1.1.0
+ARG SBT_HOME=/usr/local/sbt
+RUN curl -sL "https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar -xz -C /usr/local
 
-ENV YARN_CONF_DIR $HADOOP_PREFIX/etc/hadoop
-ENV PATH $PATH:$SPARK_HOME/bin:$HADOOP_PREFIX/bin
-# update boot script
-COPY bootstrap.sh /etc/bootstrap.sh
-RUN chown root.root /etc/bootstrap.sh
-RUN chmod 700 /etc/bootstrap.sh
+ARG SPARK_VERSION=2.2.1
+ARG SPARK_HOME=/usr/local/spark-$SPARK_VERSION-bin-hadoop2.7
+RUN curl -sL "https://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop2.7.tgz" | tar -xz -C /usr/local
 
-#install R
-RUN rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN yum -y install R
+ENV PATH $PATH:$SBT_HOME/bin:$SPARK_HOME/bin
 
-ENTRYPOINT ["/etc/bootstrap.sh"]
+ENV SPARK_MASTER local[*]
+
+ENV SPARK_DRIVER_PORT 5001
+ENV SPARK_UI_PORT 5002
+ENV SPARK_BLOCKMGR_PORT 5003
+EXPOSE $SPARK_DRIVER_PORT $SPARK_UI_PORT $SPARK_BLOCKMGR_PORT
+
+COPY run.sh /
+CMD ./run.sh
