@@ -1,0 +1,32 @@
+# Created by .ignore support plugin (hsz.mobi)
+
+out/
+target/
+*.iml
+.idea
+
+.cache-main
+.cache-tests
+.class
+bin/
+
+# log
+logging.log
+log/
+
+# eclipse
+.settings/
+.project
+.classpath
+
+# local
+local.sbt
+schemas.txt
+*.cache-main
+*.class
+*/bin
+*/*/bin
+/bin/
+checkpoint/
+
+*.DS_Store
