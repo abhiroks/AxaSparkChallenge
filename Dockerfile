@@ -20,6 +20,10 @@ ENV SPARK_DRIVER_PORT 5001
 ENV SPARK_UI_PORT 5002
 ENV SPARK_BLOCKMGR_PORT 5003
 EXPOSE $SPARK_DRIVER_PORT $SPARK_UI_PORT $SPARK_BLOCKMGR_PORT
+RUN mkdir /app
 
-COPY run.sh /
+COPY run.sh /app
+WORKDIR /app
+RUN sed -i 's/\r$//' run.sh && chmod +x run.sh
+
 CMD ./run.sh
