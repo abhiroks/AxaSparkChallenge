@@ -5,7 +5,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
 
-package object jobs extends TransformUtil{
+object jobs extends TransformUtil{
 
   val spark = SparkSession.builder
     .master("local[*]")

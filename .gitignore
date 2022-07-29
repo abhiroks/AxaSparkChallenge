@@ -4,6 +4,7 @@ out/
 target/
 *.iml
 .idea
+*.csv
 
 .cache-main
 .cache-tests
