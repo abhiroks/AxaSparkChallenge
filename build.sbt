@@ -7,7 +7,8 @@ scalaVersion := "2.11.12"
 val sparkVersion = "2.2.1"
 
 resolvers ++= Seq(
-  "confluent" at "http://packages.confluent.io/maven/"
+  "confluent" at "http://packages.confluent.io/maven/",
+  "Typesafe Server" at "https://repo.typesafe.com/typesafe/releases"
 
 )
 
