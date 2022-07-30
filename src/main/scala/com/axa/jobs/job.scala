@@ -90,6 +90,9 @@ object job extends TransformUtil{
   def main(args: Array[String]): Unit = {
 
     extract()
+    while (true) {
+      Thread.sleep(30000)
+    }
 
   }
 
