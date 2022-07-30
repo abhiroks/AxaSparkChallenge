@@ -3,12 +3,12 @@ name := "AxaSpark"
 
 version := "0.1"
 
-scalaVersion := "2.11.12"
-val sparkVersion = "2.2.1"
+scalaVersion := "2.12.4"
+val sparkVersion = "2.4.1"
 
 resolvers ++= Seq(
   "confluent" at "http://packages.confluent.io/maven/",
-  "Typesafe Server" at "https://repo.typesafe.com/typesafe/releases"
+  "spark-packages" at "https://repos.spark-packages.org/"
 
 )
 
