@@ -32,7 +32,7 @@ echo "Building at: $(pwd)"
 
 if test -z "$BUILD_COMMAND"
 then
-  build_command="sbt package"
+  build_command="sbt 'set test in assembly := {}' clean assembly"
 else
   build_command="$BUILD_COMMAND"
 fi
