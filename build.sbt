@@ -22,8 +22,6 @@ assemblyMergeStrategy in assembly := {
   case x => MergeStrategy.first
 }
 
-  //"com.rakuten.dps" %% "dps-base-batch" % "1.3",
-  // to resolve conflicts
 //  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.9.6",
 //  "com.fasterxml.jackson.core" % "jackson-core" % "2.9.6",
 //  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.6",
