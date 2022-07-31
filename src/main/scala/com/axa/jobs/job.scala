@@ -5,6 +5,7 @@ import java.util.concurrent.Executors
 import com.axa.util.TransformUtil
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.TimestampType
 import org.apache.spark.storage.StorageLevel
 
 import scala.concurrent.duration.Duration
@@ -31,26 +32,38 @@ object job extends TransformUtil{
   def extract(): DataFrame = {
     val df = spark.read.format("csv").option("header", "true").load(input)
     df.printSchema()
-    val new_df = df.groupBy("ip", "time").agg(sum("size"), count("size")).
-      withColumnRenamed("sum(size)", "doc_sum").withColumnRenamed("count(size)", "doc_count")
-    new_df.persist(StorageLevel.MEMORY_AND_DISK)
+    val df1 = df.withColumn("date_time",unix_timestamp(concat($"date",lit(" "),$"time"),"dd/MM/yyyy HH:mm:ss").cast(TimestampType)).
+      select($"ip",$"date_time",$"size")
+    //df1.show(50)
+    df1.createOrReplaceTempView("source")
+    val sessionized_df = spark.sql("select ip,date_time ,size, SUM(is_new_session) OVER (PARTITION BY ip ORDER BY date_time) AS user_session_id " +
+      "from (select * , CASE WHEN (unix_timestamp(date_time) - unix_timestamp(last_event)) >= (60 * 30) OR last_event IS NULL THEN 1 ELSE 0 END AS is_new_session FROM " +
+      "(SELECT *,LAG(date_time,1) OVER (PARTITION BY ip ORDER BY date_time) AS last_event FROM source) last ) final")
 
+
+    val sessionized_grouped_df = sessionized_df.groupBy("ip", "user_session_id").agg(sum("size"), count("size"),min("date_time")).
+      withColumnRenamed("sum(size)", "doc_sum").withColumnRenamed("count(size)", "doc_count").
+      withColumnRenamed("min(date_time)", "session_start_time")
+
+    sessionized_grouped_df.show(50)
+    sessionized_grouped_df.persist(StorageLevel.MEMORY_AND_DISK)
 
     val sumSnapshot: Future[String] = Future {
 
-      new_df.transform(deduplicate(Seq("ip"), "doc_sum", "doc_count")).
+      sessionized_grouped_df.transform(aggCal(Seq("ip","user_session_id","session_start_time"), "doc_sum", "doc_count")).
         coalesce(1).write.option("header", "true").mode("overwrite").format("csv").save(output1)
       "sum  load completed"
-
     }
+
 
     val countSnapshot: Future[String] = Future {
 
-      new_df.transform(deduplicate(Seq("ip"), "doc_count", "doc_sum")).
-        coalesce(1).write.option("header", "true").mode("overwrite").format("csv").save(output2)
-      "count  load completed"
 
-    }
+      sessionized_grouped_df.transform(aggCal(Seq("ip","user_session_id","session_start_time"), "doc_count", "doc_sum")).
+        coalesce(1).write.option("header", "true").mode("overwrite").format("csv").save(output2)
+  "count  load completed"
+
+}
 
     val chainFutures: Future[Seq[String]] = for {
       sumData <- sumSnapshot
@@ -76,12 +89,13 @@ object job extends TransformUtil{
       Await.result(chainFutures, Duration.Inf)
     }
 
-    new_df.unpersist()
+    sessionized_grouped_df.unpersist()
     spark.stop()
     context.shutdown()
 
 
-    new_df
+
+    df
 
   }
 
