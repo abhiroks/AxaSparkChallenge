@@ -32,6 +32,14 @@ object job extends TransformUtil{
   def extract(): DataFrame = {
     val df = spark.read.format("csv").option("header", "true").load(input)
     df.printSchema()
+
+
+    /** Here we are sessionizing the data .
+      * Main goal here to identify which rows belong to one session based on the 30 minutes rule
+      * Then we persist the data in memory as it will re used twice to calculate Top 10 session based on size and number of count
+      * */
+
+
     val df1 = df.withColumn("date_time",unix_timestamp(concat($"date",lit(" "),$"time"),"dd/MM/yyyy HH:mm:ss").cast(TimestampType)).
       select($"ip",$"date_time",$"size")
     //df1.show(50)
@@ -54,6 +62,10 @@ object job extends TransformUtil{
         coalesce(1).write.option("header", "true").mode("overwrite").format("csv").save(output1)
       "sum  load completed"
     }
+
+    /** Here we are creating two separate function to calculate count and sum .
+      * We are running both of them simultaneously in Thread as they do not depend on each other
+      * */
 
 
     val countSnapshot: Future[String] = Future {
