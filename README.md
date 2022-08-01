@@ -13,7 +13,7 @@
 
         docker run -it -p 5000-5010:5000-5010 -e SCM_URL="https://github.com/abhiroks/AxaSparkChallenge.git" -e SPARK_DRIVER_HOST="local_ip_address" -e MAIN_CLASS="com.axa.jobs.job" axa/docker-spark-submit:spark-2.4.1
         
-•	you can also login to the docker container and traverse to /app/data/output-sum or /app/data/output-count folder to check the output. You can achieve this by opening a new window and login to running docker container. I have ran an infinite loop to make the docker container remains alive
+•	you can also login to the docker container and traverse to /app/data/output-sum or /app/data/output-count folder to check the output. You can achieve this by opening a new window and login to running docker container. I have ran an infinite loop to make the docker container alive
 
         docker ps
 
